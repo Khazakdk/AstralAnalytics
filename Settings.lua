@@ -12,6 +12,9 @@ end
 if not AstralAnalytics.buffIds then
 	AstralAnalytics.buffIds = {}
 end
+if not AstralAnalytics.scale then
+	AstralAnalytics.scale = 1.0
+end
 
 function ADDON:AddDefaultSettings(category, name, data)
 	if not category or type(category) ~= 'string' then
@@ -57,7 +60,6 @@ end
 
 local function LoadDefaultSettings(addon)
 	if addon ~= ADDON_NAME then return end
-	ADDON:SetUIScale()
 
 	-- Default Frame options
 	ADDON:AddDefaultSettings('frame', 'locked', true)

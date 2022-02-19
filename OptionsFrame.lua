@@ -1,5 +1,4 @@
 local addonName, ADDON = ...
-local floor, min = math.floor, math.min
 
 ADDON.AAOptionsFrame = CreateFrame('FRAME', 'AAOptionsFrame', UIParent)
 ADDON.AAOptionsFrame:SetFrameStrata('DIALOG')

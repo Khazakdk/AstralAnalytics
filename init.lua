@@ -19,9 +19,6 @@ ADDON.COLOURS.TARGET = 'FFFF0000'
 ADDON.COLOURS.ADDON =  '008888FF'
 ADDON.ADDON_NAME_COLOURED = WrapTextInColorCode('[AA]', ADDON.COLOURS.ADDON)
 
-local uiScale
-local mult
-
 function AstralSendMessage(msg, channel)
 	if not msg or type(msg) ~= 'string' then
 		error('AstralSendMessage(msg, channel) msg expected, got ' .. type(msg))
@@ -94,17 +91,6 @@ function ADDON:ColouredName(unit, class, hexColor)
 	else
 		return WrapTextInColorCode(unit, nameColor)
 	end
-end
-
-function ADDON:SetUIScale()
-	self.screenHeight = UIParent:GetHeight()
-	self.scale = string.match( GetCVar( "gxWindowedResolution" ), "%d+x(%d+)" )
-	uiScale = UIParent:GetScale()
-	mult = 1080/self.scale/uiScale
-end
-
-function ADDON:Scale(x)
-	return mult * floor(x/mult+.5)
 end
 
 local scanTool = CreateFrame( "GameTooltip", "AstralScanTool", nil, "GameTooltipTemplate" )

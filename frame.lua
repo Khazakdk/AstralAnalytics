@@ -57,7 +57,7 @@ function Row:CreateRow(parent, index)
 		return ADDON.row[index]
 	end
 	local self = CreateFrame('BUTTON', '%parentButton' .. index, parent)
-	self:SetSize(ADDON:Scale(290), ADDON:Scale(16))
+	self:SetSize(290, 16)
 
 	self.background = self:CreateTexture(nil, 'BACKGROUND')
 	self.background:SetAllPoints(self)
@@ -73,8 +73,8 @@ function Row:CreateRow(parent, index)
 	self.buff = {}
 	self.buff[1] = CreateFrame('FRAME', nil, self)
 	self.buff[1].spellID = 0
-	self.buff[1]:SetPoint('RIGHT', self, 'RIGHT', ADDON:Scale(-4), 0)
-	self.buff[1]:SetSize(ADDON:Scale(12), ADDON:Scale(12))
+	self.buff[1]:SetPoint('RIGHT', self, 'RIGHT', -4, 0)
+	self.buff[1]:SetSize(12, 12)
 
 	self.buff[1].texture = self.buff[1]:CreateTexture(nil, 'OVERLAY')
 	self.buff[1].texture:SetAllPoints(self.buff[1])
@@ -114,8 +114,8 @@ function Row:CreateRow(parent, index)
 			AstralToolTip:Show()
 			end)
 		self.buff[i]:SetScript('OnLeave', function(self) AstralToolTip:Hide() end)
-		self.buff[i]:SetPoint('RIGHT', self.buff[i-1], 'LEFT', ADDON:Scale(-4), 0)
-		self.buff[i]:SetSize(ADDON:Scale(12), ADDON:Scale(12))
+		self.buff[i]:SetPoint('RIGHT', self.buff[i-1], 'LEFT', -4, 0)
+		self.buff[i]:SetSize(12, 12)
 
 		self.buff[i].texture = self.buff[i]:CreateTexture(nil, 'OVERLAY')
 		self.buff[i].texture:SetAllPoints(self.buff[i])
@@ -239,7 +239,7 @@ function ADDON:UpdateRowsShown(numFrames)
 		for i = 1, numFrames do
 			if not self.row[i] then
 				self.row[i] = Row:CreateRow(AAFrame, i)
-				self.row[i]:SetPoint('TOPLEFT', self.row[i-1], 'BOTTOMLEFT', 0, self:Scale(-3))
+				self.row[i]:SetPoint('TOPLEFT', self.row[i-1], 'BOTTOMLEFT', 0, -3)
 				MixIn(self.row[i], Row)
 			else
 				self.row[i]:Show()
@@ -317,9 +317,9 @@ end)
 
 AAFrame:SetScript('OnSizeChanged', function(self)
 	if not AAFrameDrag:IsDragging() then return end
-	local width = ADDON:Scale(self:GetWidth() - 10 - 30) -- 30 is for left menubar
-	local height = self:GetHeight() - ADDON:Scale(44)
-	self.numFramesShown = min(floor(height/ADDON:Scale(19)), 40)
+	local width = self:GetWidth() - 10 - 30 -- 30 is for left menubar
+	local height = self:GetHeight() - 44
+	self.numFramesShown = min(floor(height/19), 40)
 	AAFrameMenuBar:SetHeight(self:GetHeight())
 
 	if ADDON.row then
@@ -335,11 +335,11 @@ corner:SetScript('OnDragStop', function(self)
 	self:GetParent():StopMovingOrSizing()
 	AAFrameMenuBar:StopMovingOrSizing()
 	local numFrames = self:GetParent().numFramesShown
-	local height = ADDON:Scale(44 + (numFrames * 19))
+	local height = 44 + (numFrames * 19)
 	self:GetParent():AdjustHeight(height)
 	AAFrameMenuBar:SetScript('OnUpdate', nil)
 	self:GetParent():ClearAllPoints()
-	self:GetParent():SetPoint('TOPLEFT', UIParent, 'TOPLEFT', self:GetParent().left, -ADDON:Scale((UIParent:GetHeight() -(self:GetParent().top))))
+	self:GetParent():SetPoint('TOPLEFT', UIParent, 'TOPLEFT', self:GetParent().left, -(UIParent:GetHeight() -(self:GetParent().top)))
 	ADDON:UpdateRowsShown(numFrames)
 	ADDON:UpdateFrameRows()
 end)
@@ -486,7 +486,7 @@ end)
 
 ADDON.AAOptionsFrame:SetScript('OnSizeChanged', function(self)
 	local height = self:GetHeight()
-	visibleRows = min(floor(height/ADDON:Scale(20)), 40) - 1
+	visibleRows = min(floor(height/20), 40) - 1
 	listScrollFrame:SetHeight(height)
 	listScrollFrameUpdate()
 end)
@@ -581,6 +581,49 @@ removeSpellInputButton:SetScript('OnClick', function()
 	listScrollFrameUpdate()
 end)
 
+local scaleSlider = CreateFrame('Slider', 'AAScaleSlider', removeSpellInput, 'OptionsSliderTemplate')
+scaleSlider:SetPoint('TOP', removeSpellInput, 'BOTTOM', 0, -20)
+getglobal(scaleSlider:GetName() .. 'Low'):SetText('0.5');
+getglobal(scaleSlider:GetName() .. 'High'):SetText('1.5');
+getglobal(scaleSlider:GetName() .. 'Text'):SetText('Scale');
+scaleSlider:SetMinMaxValues(0.5, 1.5)
+scaleSlider:SetValueStep(0.1)
+
+local scaleSetter = CreateFrame('Editbox', 'scaleSetterInputBox', scaleSlider)
+scaleSetter:SetSize(80, 20)
+scaleSetter:SetPoint('TOP', scaleSlider, 'BOTTOM', 0, -20)
+scaleSetter:SetFontObject(AstralFontNormal)
+scaleSetter:EnableKeyboard(true)
+scaleSetter:SetAutoFocus(false)
+scaleSetter.background = scaleSetter:CreateTexture(nil, 'BACKGROUND')
+scaleSetter.background:SetAllPoints(scaleSetter)
+scaleSetter.background:SetColorTexture(0.3, 0.3, 0.3, 1)
+
+local function setAddonScale(scale)
+	AstralAnalytics.scale = scale
+	AAFrame:SetScale(AstralAnalytics.scale)
+	ADDON.AAOptionsFrame:SetScale(AstralAnalytics.scale)
+	scaleSlider:SetValue(AstralAnalytics.scale)
+end
+
+local function setScaleFromText()
+	local attemptedScale = tonumber(scaleSetter:GetText())
+	if (attemptedScale ~= nil and attemptedScale >= 0.5 and attemptedScale < 1.5) then 
+		setAddonScale(scaleSetter:GetText())
+	end
+end
+
+scaleSetter:SetScript("OnEnterPressed", setScaleFromText)
+scaleSetter:SetScript("OnEditFocusLost", setScaleFromText)
+
+scaleSlider:SetScript("OnValueChanged", function(self)
+	scaleSetter:SetText(string.format("%.2f", scaleSlider:GetValue()))
+end)
+
+scaleSlider:SetScript("OnMouseUp", function(self)
+	setAddonScale(scaleSlider:GetValue())
+end)
+
 function ADDON:CreateMainWindow()
 	self.row = {}
 	-- Create Header row
@@ -595,12 +638,12 @@ function ADDON:CreateMainWindow()
 		MixIn(self.row[i], Row)
 	end
 
-	local height = AAFrame:GetHeight() - ADDON:Scale(44)
-	AAFrame.numFramesShown = min(floor(height/ADDON:Scale(19)), 40)
+	local height = AAFrame:GetHeight() - 44
+	AAFrame.numFramesShown = min(floor(height/19), 40)
 
 	self:UpdateRowsShown(AAFrame.numFramesShown)
 
-	local height = ADDON:Scale(44 + (AAFrame.numFramesShown * 19))
+	local height = 44 + (AAFrame.numFramesShown * 19)
 	AAFrame:SetHeight(height)
 end
 --END SETTINGS FRAME]]--
@@ -636,17 +679,18 @@ end
 
 function ADDON:ToggleMainWindow()
 	AAFrame:SetShown(not AAFrame:IsShown())
+	setAddonScale(AstralAnalytics.scale)
 end
 
 local function InitializeWindow()
 	ADDON:CreateMainWindow()
 	-- Ensure frame is never smaller than min size on load, shit gets wonky sometimes
-	local width = ADDON:Scale(math.max(250, AAFrame:GetWidth()))
-	local height = ADDON:Scale(math.max(65, AAFrame:GetHeight()))
+	local width = math.max(250, AAFrame:GetWidth())
+	local height = math.max(65, AAFrame:GetHeight())
 	AAFrame:SetSize(width, height)
 	AAFrameMenuBar:AdjustHeight(height)
 	-- Re-use width to set width of rows
-	width = width - ADDON:Scale(10)
+	width = width - 10
 	for i = 0, #ADDON.row do
 		ADDON.row[i]:SetWidth(width - 30) -- 30 is for menubar width
 	end
