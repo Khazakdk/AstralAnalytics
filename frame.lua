@@ -634,7 +634,7 @@ function ADDON:CreateMainWindow()
 	-- Create 20 rows by default
 	for i = 1, 20 do
 		self.row[i] = Row:CreateRow(AAFrame, i)
-		self.row[i]:SetPoint('TOPLEFT', self.row[i-1], 'BOTTOMLEFT', 0, self:Scale(-3))
+		self.row[i]:SetPoint('TOPLEFT', self.row[i-1], 'BOTTOMLEFT', 0, -3)
 		MixIn(self.row[i], Row)
 	end
 
